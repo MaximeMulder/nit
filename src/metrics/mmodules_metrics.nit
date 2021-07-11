@@ -284,7 +284,7 @@ class MNBEC
 		for mmodule in mmodules do
 			var value = 0
 			for mclassdef in mmodule.mclassdefs do
-				if mclassdef.mclass.kind == enum_kind then value += 1
+				if mclassdef.mclass.kind == universal_kind then value += 1
 			end
 			values[mmodule] = value
 		end

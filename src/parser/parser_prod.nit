@@ -561,6 +561,39 @@ redef class AMainClassdef
 		n_propdefs.visit_all(v)
 	end
 end
+redef class AEnumClassdef
+	init init_aenumclassdef (
+		n_name: nullable AQclassid,
+		n_constants: Collection[Object] # Should be Collection[TClassid]
+	)
+	do
+		_n_name = n_name.as(not null)
+		n_name.parent = self
+		self.n_constants.unsafe_add_all(n_constants)
+	end
+
+	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
+	do
+		if _n_name == old_child then
+			n_name = new_child.as(AQclassid)
+			return
+		end
+		if n_constants.replace_child(old_child, new_child) then return
+	end
+
+	redef fun n_name=(node)
+	do
+		_n_name = node
+		node.parent = self
+	end
+
+
+	redef fun visit_all(v: Visitor)
+	do
+		v.enter_visit(_n_name)
+		n_constants.visit_all(v)
+	end
+end
 redef class AConcreteClasskind
 	init init_aconcreteclasskind (
 		n_kwclass: nullable TKwclass
@@ -661,33 +694,33 @@ redef class AInterfaceClasskind
 		v.enter_visit(_n_kwinterface)
 	end
 end
-redef class AEnumClasskind
-	init init_aenumclasskind (
-		n_kwenum: nullable TKwenum
+redef class AUniversalClasskind
+	init init_auniversalclasskind (
+		n_kwuniversal: nullable TKwuniversal
 	)
 	do
-		_n_kwenum = n_kwenum.as(not null)
-		n_kwenum.parent = self
+		_n_kwuniversal = n_kwuniversal.as(not null)
+		n_kwuniversal.parent = self
 	end
 
 	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
 	do
-		if _n_kwenum == old_child then
-			n_kwenum = new_child.as(TKwenum)
+		if _n_kwuniversal == old_child then
+			n_kwuniversal = new_child.as(TKwuniversal)
 			return
 		end
 	end
 
-	redef fun n_kwenum=(node)
+	redef fun n_kwuniversal=(node)
 	do
-		_n_kwenum = node
+		_n_kwuniversal = node
 		node.parent = self
 	end
 
 
 	redef fun visit_all(v: Visitor)
 	do
-		v.enter_visit(_n_kwenum)
+		v.enter_visit(_n_kwuniversal)
 	end
 end
 redef class AExternClasskind
@@ -7567,6 +7600,48 @@ redef class AManyExpr
 	redef fun visit_all(v: Visitor)
 	do
 		n_exprs.visit_all(v)
+	end
+end
+redef class AConstantExpr
+	init init_aconstantexpr (
+		n_enum: nullable TClassid,
+		n_constant: nullable TClassid
+	)
+	do
+		_n_enum = n_enum.as(not null)
+		n_enum.parent = self
+		_n_constant = n_constant.as(not null)
+		n_constant.parent = self
+	end
+
+	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
+	do
+		if _n_enum == old_child then
+			n_enum = new_child.as(TClassid)
+			return
+		end
+		if _n_constant == old_child then
+			n_constant = new_child.as(TClassid)
+			return
+		end
+	end
+
+	redef fun n_enum=(node)
+	do
+		_n_enum = node
+		node.parent = self
+	end
+	redef fun n_constant=(node)
+	do
+		_n_constant = node
+		node.parent = self
+	end
+
+
+	redef fun visit_all(v: Visitor)
+	do
+		v.enter_visit(_n_enum)
+		v.enter_visit(_n_constant)
 	end
 end
 redef class AListExprs

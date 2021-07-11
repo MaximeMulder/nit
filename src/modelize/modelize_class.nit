@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#	 http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -94,6 +94,16 @@ redef class ModelBuilder
 			nvisibility = null
 			mvisibility = public_visibility
 			mclass = try_get_mclass_by_name(nclassdef, mmodule, name)
+		else if nclassdef isa AEnumClassdef then
+			var qid = nclassdef.n_name
+			assert qid != null
+			name = qid.n_id.text
+			nkind = null
+			mkind = universal_kind
+			nvisibility = null
+			mvisibility = public_visibility
+			arity = 0
+ 			mclass = try_get_mclass_by_qid(qid, mmodule)
 		else
 			name = "Sys"
 			nkind = null
@@ -117,7 +127,17 @@ redef class ModelBuilder
 				end
 			end
 
-			mclass = new MClass(mmodule, name, nclassdef.location, names, mkind, mvisibility)
+			if nclassdef isa AEnumClassdef then
+				var constants = new Array[String]
+				for n_constant in nclassdef.n_constants do
+					constants.add(n_constant.text)
+				end
+
+				mclass = new MEnum(mmodule, name, nclassdef.location, names, mkind, mvisibility, constants)
+			else
+				mclass = new MClass(mmodule, name, nclassdef.location, names, mkind, mvisibility)
+			end
+
 			#print "new class {mclass}"
 		else if nclassdef isa AStdClassdef and nmodule.mclass2nclassdef.has_key(mclass) then
 			error(nclassdef, "Error: a class `{name}` is already defined at line {nmodule.mclass2nclassdef[mclass].location.line_start}.")
@@ -532,8 +552,8 @@ end
 redef class AInterfaceClasskind
 	redef fun mkind do return interface_kind
 end
-redef class AEnumClasskind
-	redef fun mkind do return enum_kind
+redef class AUniversalClasskind
+	redef fun mkind do return universal_kind
 end
 redef class AExternClasskind
 	redef fun mkind do return extern_kind

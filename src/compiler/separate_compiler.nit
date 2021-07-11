@@ -1060,7 +1060,7 @@ class SeparateCompiler
 
 		# While the class may be dead, some part of separately compiled code may use symbols associated to the class, so
 		# in order to compile and link correctly the C code, these symbols should be declared and defined.
-		var need_corpse = is_dead and mtype.is_c_primitive or mclass.kind == extern_kind or mclass.kind == enum_kind
+		var need_corpse = is_dead and mtype.is_c_primitive or mclass.kind == extern_kind or mclass.kind == universal_kind
 
 		var compilation_info = new ClassCompilationInfo(mclass, is_dead, need_corpse)
 		return compilation_info

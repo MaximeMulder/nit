@@ -28,6 +28,9 @@ module model
 import mmodule
 import mdoc
 import ordered_tree
+
+import nitc::parser_nodes
+
 private import more_collections
 
 redef class MEntity
@@ -53,7 +56,7 @@ redef class Model
 	#
 	# ~~~
 	# var m = new ModelDiamond
-	# assert     m.mclassdef_hierarchy.has_edge(m.mclassdef_b, m.mclassdef_a)
+	# assert	 m.mclassdef_hierarchy.has_edge(m.mclassdef_b, m.mclassdef_a)
 	# assert not m.mclassdef_hierarchy.has_edge(m.mclassdef_a, m.mclassdef_b)
 	# assert not m.mclassdef_hierarchy.has_edge(m.mclassdef_b, m.mclassdef_c)
 	# ~~~
@@ -204,37 +207,37 @@ redef class MModule
 	do
 		var res = self.flatten_mclass_hierarchy_cache
 		if res != null then return res
-                self.flatten_mclass_hierarchy_cache = new POSet[MClass]
+		self.flatten_mclass_hierarchy_cache = new POSet[MClass]
 		for m in self.in_importation.greaters do
 			for cd in m.mclassdefs do
-                                unsafe_update_hierarchy_cache(cd)
+				unsafe_update_hierarchy_cache(cd)
 			end
 		end
 		return self.flatten_mclass_hierarchy_cache.as(not null)
 	end
 
-        # Adds another class definition in the modue.
-        # Updates the class hierarchy cache.
-        fun add_mclassdef(mclassdef: MClassDef)
-        do
-                self.mclassdefs.add(mclassdef)
-                if self.flatten_mclass_hierarchy_cache != null then
-                        unsafe_update_hierarchy_cache(mclassdef)
-                end
-        end
+	# Adds another class definition in the modue.
+	# Updates the class hierarchy cache.
+	fun add_mclassdef(mclassdef: MClassDef)
+	do
+		self.mclassdefs.add(mclassdef)
+		if self.flatten_mclass_hierarchy_cache != null then
+			unsafe_update_hierarchy_cache(mclassdef)
+		end
+	end
 
-        # Adds a class definition inside `flatten_mclass_hierarchy_cache` without
-        # null check. The caller must have initialized the cache.
-        protected fun unsafe_update_hierarchy_cache(mclassdef: MClassDef)
-        do
-                var hierarchy = self.flatten_mclass_hierarchy_cache.as(not null)
-                # Update the cache
-                var c = mclassdef.mclass
-                hierarchy.add_node(c)
-                for s in mclassdef.supertypes do
-                        hierarchy.add_edge(c, s.mclass)
-                end
-        end
+	# Adds a class definition inside `flatten_mclass_hierarchy_cache` without
+	# null check. The caller must have initialized the cache.
+	protected fun unsafe_update_hierarchy_cache(mclassdef: MClassDef)
+	do
+		var hierarchy = self.flatten_mclass_hierarchy_cache.as(not null)
+		# Update the cache
+		var c = mclassdef.mclass
+		hierarchy.add_node(c)
+		for s in mclassdef.supertypes do
+			hierarchy.add_edge(c, s.mclass)
+		end
+	end
 
 	# Sort a given array of classes using the linearization order of the module
 	# The most general is first, the most specific is last
@@ -343,7 +346,7 @@ redef class MModule
 				# Bool is injected because it is needed by engine to code the result
 				# of the implicit casts.
 				var loc = model.no_location
-				var c = new MClass(self, name, loc, null, enum_kind, public_visibility)
+				var c = new MClass(self, name, loc, null, universal_kind, public_visibility)
 				var cladef = new MClassDef(self, c.mclass_type, loc)
 				cladef.set_supertypes([object_type])
 				cladef.add_in_hierarchy
@@ -608,8 +611,8 @@ class MClass
 	# Is `self` an interface kind?
 	var is_interface: Bool is lazy do return kind == interface_kind
 
-	# Is `self` an enum kind?
-	var is_enum: Bool is lazy do return kind == enum_kind
+	# Is `self` an universal kind?
+	var is_enum: Bool is lazy do return kind == universal_kind
 
 	# Is `self` and abstract class?
 	var is_abstract: Bool is lazy do return kind == abstract_kind
@@ -624,6 +627,11 @@ class MClass
 	end
 end
 
+class MEnum
+	super MClass
+
+	var constants: Array[String]
+end
 
 # A definition (an introduction or a refinement) of a class in a module
 #
@@ -974,17 +982,17 @@ abstract class MType
 	#
 	# Example
 	#
-	#     class A end
-	#     class B super A end
-	#     class X end
-	#     class Y super X end
-	#     class G[T: A]
-	#       type U: X
-	#     end
-	#     class H
-	#       super G[B]
-	#       redef type U: Y
-	#     end
+	#	 class A end
+	#	 class B super A end
+	#	 class X end
+	#	 class Y super X end
+	#	 class G[T: A]
+	#	   type U: X
+	#	 end
+	#	 class H
+	#	   super G[B]
+	#	   redef type U: Y
+	#	 end
 	#
 	# Map[T,U]  anchor_to  H  #->  Map[B,Y]
 	#
@@ -1017,8 +1025,8 @@ abstract class MType
 	# Example:
 	#
 	# ~~~nitish
-	#     class G[T, U] end
-	#     class H[V] super G[V, Bool] end
+	#	 class G[T, U] end
+	#	 class H[V] super G[V, Bool] end
 	#
 	# H[Int]  supertype_to  G  #->  G[Int, Bool]
 	# ~~~
@@ -1079,7 +1087,7 @@ abstract class MType
 	#
 	# ~~~
 	# class A[E]
-	#     fun foo(e:E):E is abstract
+	#	 fun foo(e:E):E is abstract
 	# end
 	# class B super A[Int] end
 	# ~~~
@@ -1091,11 +1099,11 @@ abstract class MType
 	#
 	# ~~~nitish
 	# class A[E]
-	#     fun foo(e:E):E is abstract
+	#	 fun foo(e:E):E is abstract
 	# end
 	# class C[F]
-	#     var a: A[Array[F]]
-	#     fun bar do a.foo(x) # <- x is here
+	#	 var a: A[Array[F]]
+	#	 fun bar do a.foo(x) # <- x is here
 	# end
 	# ~~~
 	#
@@ -1168,10 +1176,10 @@ abstract class MType
 	#
 	# ## Example
 	#
-	#     class A[E]
-	#     end
-	#     class B[F]
-	#     end
+	#	 class A[E]
+	#	 end
+	#	 class B[F]
+	#	 end
 	#
 	# ~~~nitish
 	# E.can_resolve_for(A[Int])  #->  true, E make sense in A
@@ -1375,7 +1383,7 @@ class MClassType
 					types.add(supertype)
 					var superclass = supertype.mclass
 					if seen.has(superclass) then continue
-					#print "    add {superclass}"
+					#print "	add {superclass}"
 					seen.add(superclass)
 					todo.add(superclass)
 				end
@@ -1573,7 +1581,7 @@ class MVirtualType
 		if prop.is_fixed then return res
 
 		# For a enum receiver return the bound
-		if resolved_receiver.mclass.kind == enum_kind then return res
+		if resolved_receiver.mclass.kind == universal_kind then return res
 
 		return self
 	end
@@ -1635,12 +1643,12 @@ end
 #
 # Example:
 #
-#     class A[E]
-#         fun e: E is abstract
-#     end
-#     class B[F]
-#         super A[Array[F]]
-#     end
+#	 class A[E]
+#		 fun e: E is abstract
+#	 end
+#	 class B[F]
+#		 super A[Array[F]]
+#	 end
 #
 # In the class definition B[F], `F` is a valid type but `E` is not.
 # However, `self.e` is a valid method call, and the signature of `e` is
@@ -2722,7 +2730,7 @@ end
 #  * `abstract_kind`
 #  * `concrete_kind`
 #  * `interface_kind`
-#  * `enum_kind`
+#  * `universal_kind`
 #  * `extern_kind`
 #
 # Note this class is basically an enum.
@@ -2747,8 +2755,8 @@ class MClassKind
 		if other == interface_kind then
 			# everybody can specialize interfaces
 			return true
-		else if self == interface_kind or self == enum_kind then
-			# no other case for interfaces and enums
+		else if self == interface_kind or self == universal_kind then
+			# no other case for interfaces and universals
 			return false
 		else if self == subset_kind then
 			# A subset may specialize anything, except another subset.
@@ -2771,7 +2779,7 @@ fun concrete_kind: MClassKind do return once new MClassKind("class", false, true
 # The class kind `interface`
 fun interface_kind: MClassKind do return once new MClassKind("interface", false, true, false)
 # The class kind `enum`
-fun enum_kind: MClassKind do return once new MClassKind("enum", false, true, false)
+fun universal_kind: MClassKind do return once new MClassKind("universal", false, true, false)
 # The class kind `extern`
 fun extern_kind: MClassKind do return once new MClassKind("extern class", false, true, false)
 # The class kind `subset`

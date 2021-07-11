@@ -119,9 +119,11 @@ redef class ModelBuilder
 			for npropdef in nclassdef2.n_propdefs do
 				npropdef.build_property(self, mclassdef)
 			end
+
 			for npropdef in nclassdef2.n_propdefs do
 				npropdef.build_signature(self)
 			end
+
 			for npropdef in nclassdef2.n_propdefs do
 				if not npropdef isa ATypePropdef then continue
 				# Check circularity
@@ -134,6 +136,7 @@ redef class ModelBuilder
 					mpropdef.bound = new MErrorType(mclassdef.mmodule.model)
 				end
 			end
+
 			for npropdef in nclassdef2.n_propdefs do
 				# Check ATypePropdef first since they may be required for the other properties
 				if not npropdef isa ATypePropdef then continue
@@ -195,8 +198,8 @@ redef class ModelBuilder
 
 		if mclassdef.default_init != null then return
 
-		# If the class is not AStdClassdef or it's an enum just return. No defaultinit is need.
-		if not nclassdef isa AStdClassdef or nclassdef.n_classkind isa AEnumClasskind then return
+		# If the class is not AStdClassdef or it's an universal just return. No defaultinit is need.
+		if not nclassdef isa AStdClassdef or nclassdef.n_classkind isa AUniversalClasskind then return
 
 		# Collect undefined attributes
 		var mparameters = new Array[MParameter]
@@ -1307,7 +1310,6 @@ redef class AAttrPropdef
 	fun build_read_property(modelbuilder: ModelBuilder, mclassdef: MClassDef): Bool
 	do
 		var mclass = mclassdef.mclass
-
 		var readname = name
 		var mreadprop = modelbuilder.try_get_mproperty_by_name(self, mclassdef, readname).as(nullable MMethod)
 		if mreadprop == null then

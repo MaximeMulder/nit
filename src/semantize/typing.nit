@@ -2196,47 +2196,48 @@ redef class ACallrefExpr
 		super # do the job as if it was a real call
 		var res = callsite.mproperty
 
-                var msignature = callsite.mpropdef.msignature
-                var recv = callsite.recv
-                assert msignature != null
-                var arity = msignature.mparameters.length
+		var msignature = callsite.mpropdef.msignature
+		var recv = callsite.recv
+		assert msignature != null
+		var arity = msignature.mparameters.length
 
-                var routine_type_name = "ProcRef"
-                if msignature.return_mtype != null then
-                        routine_type_name = "FunRef"
-                end
+		var routine_type_name = "ProcRef"
+		if msignature.return_mtype != null then
+			routine_type_name = "FunRef"
+		end
 
-                var target_routine_class = "{routine_type_name}{arity}"
-                var routine_mclass = v.get_mclass(self, target_routine_class)
+		var target_routine_class = "{routine_type_name}{arity}"
+		var routine_mclass = v.get_mclass(self, target_routine_class)
 
-                if routine_mclass == null then
-                        v.error(self, "Error: missing functional types, try `import functional`")
-                        return
-                end
+		if routine_mclass == null then
+			v.error(self, "Error: missing functional types, try `import functional`")
+			return
+		end
 
-                var types_list = new Array[MType]
-                for param in msignature.mparameters do
-                        if param.is_vararg then
-                                types_list.push(v.mmodule.array_type(param.mtype))
-                        else
-                                types_list.push(param.mtype)
-                        end
-                end
-                if msignature.return_mtype != null then
-                        types_list.push(msignature.return_mtype.as(not null))
-                end
+		var types_list = new Array[MType]
+		for param in msignature.mparameters do
+			if param.is_vararg then
+				types_list.push(v.mmodule.array_type(param.mtype))
+			else
+				types_list.push(param.mtype)
+			end
+		end
 
-                # Why we need an anchor :
-                #
-                # ~~~~nitish
-                # class A[E]
-                #       def toto(x: E) do print "{x}"
-                # end
-                #
-                # var a = new A[Int]
-                # var f = &a.toto # without anchor : ProcRef1[E]
-                #		  # with anchor : ProcRef[Int]
-                # ~~~~
+		if msignature.return_mtype != null then
+			types_list.push(msignature.return_mtype.as(not null))
+		end
+
+		# Why we need an anchor :
+		#
+		# ~~~~nitish
+		# class A[E]
+		#	   def toto(x: E) do print "{x}"
+		# end
+		#
+		# var a = new A[Int]
+		# var f = &a.toto # without anchor : ProcRef1[E]
+		#		  # with anchor : ProcRef[Int]
+		# ~~~~
 		# However, we can only anchor if we can resolve every formal
 		# parameter, here's an example where we can't.
 		# ~~~~nitish
@@ -2252,7 +2253,8 @@ redef class ACallrefExpr
 		if not recv.need_anchor then
 			routine_type = routine_type.anchor_to(v.mmodule, recv.as(MClassType))
 		end
-                is_typed = true
+
+		is_typed = true
 		self.mtype = routine_type
 	end
 end
@@ -2627,6 +2629,15 @@ redef class ADebugTypeExpr
 			var umtype = v.anchor_to(mtype)
 			v.display_warning(self, "debug", "Found type {expr} (-> {unsafe}), expected {mtype} (-> {umtype})")
 		end
+		self.is_typed = true
+	end
+end
+
+redef class AConstantExpr
+	redef fun accept_typing(v)
+	do
+		var mclass = v.get_mclass(self, self.n_enum.text)
+		self.mtype = mclass.mclass_type
 		self.is_typed = true
 	end
 end

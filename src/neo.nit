@@ -657,8 +657,8 @@ class NeoModel
 			return concrete_kind
 		else if kind == interface_kind.to_s then
 			return interface_kind
-		else if kind == enum_kind.to_s then
-			return enum_kind
+		else if kind == universal_kind.to_s then
+			return universal_kind
 		else if kind == extern_kind.to_s then
 			return extern_kind
 		else

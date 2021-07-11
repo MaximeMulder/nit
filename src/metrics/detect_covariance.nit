@@ -138,7 +138,7 @@ private class DetectCovariancePhase
 			cpt_subtype_kinds.inc("generic type")
 		else if not sub isa MClassType then
 			cpt_subtype_kinds.inc("formal type")
-		else if sub.mclass.kind == enum_kind then
+		else if sub.mclass.kind == universal_kind then
 			cpt_subtype_kinds.inc("primitive type")
 		else if sub.mclass.name == "Object" then
 			cpt_subtype_kinds.inc("object")

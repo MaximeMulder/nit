@@ -534,7 +534,12 @@ class TKwinterface
 	super TokenKeyword
 end
 
-# The keywords `enum` and `universal`
+# The keyword `universal`
+class TKwuniversal
+	super TokenKeyword
+end
+
+# The keywords `enum`
 class TKwenum
 	super TokenKeyword
 end
@@ -1287,6 +1292,16 @@ class AMainClassdef
 	super AClassdef
 end
 
+class AEnumClassdef
+	super AClassdef
+
+	# The name of the enum
+	var n_name: nullable AQclassid = null is writable
+
+	# The constants of the enum
+	var n_constants = new ANodes[TClassid](self)
+end
+
 # The modifier for the kind of class (abstract, interface, etc.)
 abstract class AClasskind
 	super Prod
@@ -1320,11 +1335,11 @@ class AInterfaceClasskind
 end
 
 # An enum/universal class modifier (`enum class`)
-class AEnumClasskind
+class AUniversalClasskind
 	super AClasskind
 
-	# The `enum` keyword.
-	var n_kwenum: TKwenum is writable, noinit
+	# The `universal` keyword.
+	var n_kwuniversal: TKwuniversal is writable, noinit
 end
 
 # An extern class modifier (`extern class`)
@@ -2470,12 +2485,11 @@ end
 #
 # Note: The class specializes `ASendExpr` (trough `ACallFormExpr`) so some behavior of a genuine send expression must be redefined.
 class ACallrefExpr
-       super ACallFormExpr
+	super ACallFormExpr
 
-       # The `&` operator
-       var n_amp: TAmp is writable, noinit
+	# The `&` operator
+	var n_amp: TAmp is writable, noinit
 end
-
 
 # A call to `super`. OR a call of a super-constructor
 class ASuperExpr
@@ -2815,6 +2829,16 @@ class AManyExpr
 
 	# The list of expressions
 	var n_exprs = new ANodes[AExpr](self)
+end
+
+class AConstantExpr
+	super AExpr
+
+	# The name of the enum
+	var n_enum: nullable TClassid = null is writable
+
+	# The constant itself
+	var n_constant: nullable TClassid = null is writable
 end
 
 # A special expression that encapsulates a static type

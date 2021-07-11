@@ -31,6 +31,9 @@ end
 class TKwenum
 	super Token
 end
+class TKwuniversal
+	super Token
+end
 class TKwsubset
 	super Token
 end
@@ -459,6 +462,11 @@ class AMainClassdef
 	super AClassdef
 	var n_propdefs: List[APropdef] = new List[APropdef]
 end
+class AEnumClassdef
+	super AClassdef
+	var n_name: AQclassid is writable, noinit
+	var n_constants: List[TClassid] = new List[TClassid]
+end
 class AConcreteClasskind
 	super AClasskind
 	var n_kwclass: TKwclass is writable, noinit
@@ -472,9 +480,9 @@ class AInterfaceClasskind
 	super AClasskind
 	var n_kwinterface: TKwinterface is writable, noinit
 end
-class AEnumClasskind
+class AUniversalClasskind
 	super AClasskind
-	var n_kwenum: TKwenum is writable, noinit
+	var n_kwuniversal: TKwuniversal is writable, noinit
 end
 class AExternClasskind
 	super AClasskind
@@ -1238,6 +1246,11 @@ end
 class AManyExpr
 	super AExpr
 	var n_exprs: List[AExpr] = new List[AExpr]
+end
+class AConstantExpr
+	super AExpr
+	var n_enum: TClassid is writable, noinit
+	var n_constant: TClassid is writable, noinit
 end
 class AListExprs
 	super AExprs
