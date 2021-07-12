@@ -842,6 +842,25 @@ class PrimitiveInstance[E]
 	redef fun to_u32 do return val.as(UInt32)
 end
 
+class ConstantInstance
+	super Instance
+
+	var name: String
+
+	redef fun ==(o)
+	do
+		if not o isa ConstantInstance then return false
+		return self.mtype == o.mtype and self.name == o.name
+	end
+
+	redef fun eq_is(o)
+	do
+		return self == o
+	end
+
+	redef fun to_s do return self.name
+end
+
 # Information about local variables in a running method
 abstract class Frame
 	# The current visited node
@@ -2473,6 +2492,6 @@ end
 redef class AConstantExpr
 	redef fun expr(v)
 	do
-		return v.string_instance(self.n_constant.text)
+		return new ConstantInstance(self.mtype.as(not null), self.n_constant.text)
 	end
 end
