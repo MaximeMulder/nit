@@ -2634,10 +2634,40 @@ redef class ADebugTypeExpr
 end
 
 redef class AConstantExpr
+	# Index of the constant in the enumeration, used instead of the constant name as an optimization.
+	var constant_index: nullable Int
+
 	redef fun accept_typing(v)
 	do
-		var mclass = v.get_mclass(self, self.n_enum.text)
-		self.mtype = mclass.mclass_type
+		# Get the class whose name matches the node enumeration name.
+		var menum = v.get_mclass(self, self.n_enum.text)
+
+		# Return an error if the class is not an enumeration.
+		if not menum isa MEnum then
+			v.modelbuilder.error(self.n_enum, "Error: `{self.n_enum.text}` is not an enumeration")
+			return
+		end
+
+		# Find a constant with a matching name and its index in the enumeration.
+		var index: nullable Int = null
+		var i = 0
+		for constant in menum.constants do
+			i += 1
+			if self.n_constant.text == constant then
+				index = i
+				break
+			end
+		end
+
+		# Return an error if no constant in the enumeration matches the node constant name
+		if index == null then
+			v.modelbuilder.error(self.n_constant, "Error: constant `{self.n_constant.text}` does not exist in enumeration `{self.n_enum.text}`.")
+			return
+		end
+
+		# Set the constant index and accept typing.
+		self.constant_index = index
+		self.mtype = menum.mclass_type
 		self.is_typed = true
 	end
 end

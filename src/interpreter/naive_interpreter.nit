@@ -845,12 +845,13 @@ end
 class ConstantInstance
 	super Instance
 
-	var name: String
+	# Index of the constant in its enumeration.
+	var index: Int
 
 	redef fun ==(o)
 	do
 		if not o isa ConstantInstance then return false
-		return self.mtype == o.mtype and self.name == o.name
+		return self.mtype == o.mtype and self.index == o.index
 	end
 
 	redef fun eq_is(o)
@@ -858,7 +859,7 @@ class ConstantInstance
 		return self == o
 	end
 
-	redef fun to_s do return self.name
+	redef fun to_s do return "TODO to_s"
 end
 
 # Information about local variables in a running method
@@ -2492,6 +2493,6 @@ end
 redef class AConstantExpr
 	redef fun expr(v)
 	do
-		return new ConstantInstance(self.mtype.as(not null), self.n_constant.text)
+		return new ConstantInstance(self.mtype.as(not null), self.constant_index.as(not null))
 	end
 end
