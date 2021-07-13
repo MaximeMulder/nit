@@ -510,6 +510,7 @@ assignment~nopar {-> expr}
 	| {call_re} recv~nopar qid args assign_op expr {-> New expr.call_reassign(recv~nopar.expr, qid, args.exprs, assign_op,  expr)}
 	| {bra_re} expr_atom~nopar braargs assign_op expr {-> New expr.bra_reassign(expr_atom~nopar.expr, braargs.exprs, assign_op,  expr)}
 	;
+
 assign_op
 	= {plus} pluseq
 	| {minus} minuseq
@@ -579,8 +580,8 @@ assert~withelse {-> expr}
 	= {else} kwassert assertid? expr kwelse stmtso~withelse {-> New expr.assert(kwassert, assertid.id, expr, kwelse, stmtso~withelse.expr)}
 !withelse| {noelse} kwassert assertid? expr {-> New expr.assert(kwassert, assertid.id, expr, Null, Null)}
 	;
-assertid {-> id}
-	= id column {-> id};
+
+assertid {-> id} = id column {-> id};
 
 /* EXPRESSIONS ***************************************************************/
 expr~nopar~nobra {-> expr}

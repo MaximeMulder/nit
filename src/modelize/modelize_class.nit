@@ -130,6 +130,13 @@ redef class ModelBuilder
 			if nclassdef isa AEnumClassdef then
 				var constants = new Array[String]
 				for n_constant in nclassdef.n_constants do
+					for constant in constants do
+						if constant == n_constant.text then
+							error(nclassdef, "Error: An enumeration cannot have two constants sharing the same name.")
+							return
+						end
+					end
+
 					constants.add(n_constant.text)
 				end
 
