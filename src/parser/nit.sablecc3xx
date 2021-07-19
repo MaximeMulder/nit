@@ -98,8 +98,8 @@ id = lowercase letter*;
 /*****************************************************************************/
 States
 /*****************************************************************************/
-initial;
 
+initial;
 
 /*****************************************************************************/
 Tokens
@@ -240,6 +240,7 @@ Productions
 /*****************************************************************************/
 
 /* MODULES *******************************************************************/
+
 module
 	= moduledecl? [imports]:import* [extern_bodies]:extern_code_body* [classdefs]:topdef* implicit_main_class {-> New module(moduledecl, [imports.import], [extern_bodies.extern_code_block], [classdefs.classdef,implicit_main_class.classdef])};
 
@@ -275,6 +276,7 @@ implicit_main_meth {-> propdef}
 	;
 
 /* CLASSES *******************************************************************/
+
 classdef
 	= [doc]:nd redef visibility classkind no qclassid extern_code_block? propdefs kwend {-> New classdef.std(doc.doc, redef.kwredef, visibility, classkind, qclassid, Null, [], Null, extern_code_block, [propdefs.propdef], kwend)}
 	| {for} [doc]:nd redef visibility classkind no qclassid obra [n2]:no formaldefs cbra extern_code_block? propdefs kwend {-> New classdef.std(doc.doc, redef.kwredef, visibility, classkind, qclassid, obra, [formaldefs.formaldef], cbra, extern_code_block, [propdefs.propdef], kwend)}
@@ -310,9 +312,7 @@ propdefs {-> propdef*}
 	| {empty} nd {-> []}
 	;
 
-propdefn {-> propdef}
-	= propdef n1 {-> propdef.propdef}
-	;
+propdefn {-> propdef} = propdef n1 {-> propdef.propdef};
 
 propdef~toplevel {-> propdef}
 	= {meth} [doc]:nd redef visibility kwmeth qmethid signature annotation_noend? kwdo stmtso kwend_o {-> New propdef.meth(doc.doc, redef.kwredef, visibility, kwmeth, Null, Null, Null, qmethid.methid, signature, annotation_noend.annotations, Null, Null, kwdo, stmtso.expr, kwend_o.kwend)}
@@ -439,6 +439,7 @@ extern_code_block_o {-> extern_code_block?}
 extern_code_body {-> extern_code_block} = no extern_code_block {-> extern_code_block};
 
 /* TYPES *********************************************************************/
+
 type~nobra~nopar {-> type}
 	= {atom} [t]:type_atom~nobra~nopar {-> t.type }
 	| {inter} [t1]:type_atom~nobra~nopar kwand [t2]:type_atom~nobra~nopar {-> t1.type } /* TODO create real nodes */
@@ -460,20 +461,22 @@ typing_o {-> type?}
 	;
 
 /* STATMENTS *****************************************************************/
+
 stmtso~withelse~withend {-> expr?}
 	= {block} n stmtsnend {-> stmtsnend.expr}
 	| {emptyblock} n kwend {-> New expr.block([], kwend)}
 	| {emptyoneline} kwend {-> New expr.block([], kwend)}
 !withend| {oneline} stmt~withelse {-> stmt~withelse.expr}
 	;
-stmts {-> expr}
-	= stmt stmts_tail* {-> New expr.block([stmt.expr, stmts_tail.expr], Null)};
-stmtsn {-> expr}
-	= stmt stmts_tail* n {-> New expr.block([stmt.expr, stmts_tail.expr], Null)};
-stmtsnend {-> expr}
-	= stmt stmts_tail* n kwend {-> New expr.block([stmt.expr, stmts_tail.expr], kwend)};
-stmts_tail {-> expr}
-	= n stmt {-> stmt.expr};
+
+stmts {-> expr} = stmt stmts_tail* {-> New expr.block([stmt.expr, stmts_tail.expr], Null)};
+
+stmtsn {-> expr} = stmt stmts_tail* n {-> New expr.block([stmt.expr, stmts_tail.expr], Null)};
+
+stmtsnend {-> expr} = stmt stmts_tail* n kwend {-> New expr.block([stmt.expr, stmts_tail.expr], kwend)};
+
+stmts_tail {-> expr} = n stmt {-> stmt.expr};
+
 stmt~withelse~noexpr~nopar {-> expr}
 	= {vardecl} vardecl {-> vardecl.expr}
 	| {assign} assignment~nopar {-> assignment~nopar.expr}
@@ -495,7 +498,7 @@ stmt~withelse~noexpr~nopar {-> expr}
 	| {debug_type_is} kwdebug kwtype type column expr {-> New expr.debug_type(kwdebug, kwtype, expr.expr, type) }
 	;
 
-label= kwlabel id?;
+label = kwlabel id?;
 
 vardecl{-> expr}
 	= kwvar id annotations? typing_o {-> New expr.vardecl(kwvar, id, typing_o.type, Null, Null, annotations)}
@@ -562,9 +565,8 @@ for_groups {-> for_group*}
 	= {one} for_group {-> [for_group]}
 	| {many} for_groups no comma [n2]:no for_group {-> [for_groups.for_group, for_group] }
 	;
-for_group
-	= [ids]:idlist [n2]:no kwin [n3]:no expr {-> New for_group([ids.id], kwin, expr)}
-	;
+
+for_group = [ids]:idlist [n2]:no kwin [n3]:no expr {-> New for_group([ids.id], kwin, expr)};
 
 with~withelse {-> expr}
 	= kwwith no withexpr [n4]:no kwdo stmtso_withend label {-> New expr.with(kwwith, withexpr.expr, kwdo, stmtso_withend.expr, label)}
@@ -584,6 +586,7 @@ assert~withelse {-> expr}
 assertid {-> id} = id column {-> id};
 
 /* EXPRESSIONS ***************************************************************/
+
 expr~nopar~nobra {-> expr}
 	= expr_and~nopar~nobra {-> expr_and~nopar~nobra.expr}
 	| {ifexpr} kwif [n1]:no expr [n2]:no kwthen [n3]:no [then]:expr [n4]:no kwelse [n5]:no [else]:expr~nopar~nobra {-> New expr.ifexpr(kwif, expr, kwthen, then, kwelse, else.expr)}
@@ -805,8 +808,8 @@ any_expr~nopar {-> expr}
 !nopar	| {at} annotations {-> New expr.at(annotations.annotations)}
 	;
 
-atid~forclass {-> atid}
-	= {id}  id {-> New atid.id(id)}
+atid~forclass {-> atid} = {id}  id {-> New atid.id(id)}
+
 !forclass	| {kwextern} kwextern {-> New atid.kwextern(kwextern)}
 //	| {kwimport} kwimport {-> New atid.kwimport(kwimport)}
 	| {kwabstract} kwabstract {-> New atid.kwabstract(kwabstract)}
