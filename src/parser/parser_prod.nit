@@ -561,39 +561,6 @@ redef class AMainClassdef
 		n_propdefs.visit_all(v)
 	end
 end
-redef class AEnumClassdef
-	init init_aenumclassdef (
-		n_name: nullable AQclassid,
-		n_constants: Collection[Object] # Should be Collection[TClassid]
-	)
-	do
-		_n_name = n_name.as(not null)
-		n_name.parent = self
-		self.n_constants.unsafe_add_all(n_constants)
-	end
-
-	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
-	do
-		if _n_name == old_child then
-			n_name = new_child.as(AQclassid)
-			return
-		end
-		if n_constants.replace_child(old_child, new_child) then return
-	end
-
-	redef fun n_name=(node)
-	do
-		_n_name = node
-		node.parent = self
-	end
-
-
-	redef fun visit_all(v: Visitor)
-	do
-		v.enter_visit(_n_name)
-		n_constants.visit_all(v)
-	end
-end
 redef class AConcreteClasskind
 	init init_aconcreteclasskind (
 		n_kwclass: nullable TKwclass
@@ -721,6 +688,35 @@ redef class AUniversalClasskind
 	redef fun visit_all(v: Visitor)
 	do
 		v.enter_visit(_n_kwuniversal)
+	end
+end
+redef class AEnumClasskind
+	init init_aenumclasskind (
+		n_kwenum: nullable TKwenum
+	)
+	do
+		_n_kwenum = n_kwenum.as(not null)
+		n_kwenum.parent = self
+	end
+
+	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
+	do
+		if _n_kwenum == old_child then
+			n_kwenum = new_child.as(TKwenum)
+			return
+		end
+	end
+
+	redef fun n_kwenum=(node)
+	do
+		_n_kwenum = node
+		node.parent = self
+	end
+
+
+	redef fun visit_all(v: Visitor)
+	do
+		v.enter_visit(_n_kwenum)
 	end
 end
 redef class AExternClasskind
@@ -1584,6 +1580,35 @@ redef class AAnnotPropdef
 		n_args.visit_all(v)
 		v.enter_visit(_n_cpar)
 		v.enter_visit(_n_annotations)
+	end
+end
+redef class AConstantPropdef
+	init init_aconstantpropdef (
+		n_name: nullable TClassid
+	)
+	do
+		_n_name = n_name.as(not null)
+		n_name.parent = self
+	end
+
+	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
+	do
+		if _n_name == old_child then
+			n_name = new_child.as(TClassid)
+			return
+		end
+	end
+
+	redef fun n_name=(node)
+	do
+		_n_name = node
+		node.parent = self
+	end
+
+
+	redef fun visit_all(v: Visitor)
+	do
+		v.enter_visit(_n_name)
 	end
 end
 redef class AIdMethid
@@ -7642,6 +7667,123 @@ redef class AConstantExpr
 	do
 		v.enter_visit(_n_enum)
 		v.enter_visit(_n_constant)
+	end
+end
+redef class ASwitchExpr
+	init init_aswitchexpr (
+		n_expr: nullable AExpr,
+		n_cases: Collection[Object], # Should be Collection[ASwitchCase]
+		n_default: nullable ASwitchDefault
+	)
+	do
+		_n_expr = n_expr.as(not null)
+		n_expr.parent = self
+		self.n_cases.unsafe_add_all(n_cases)
+		_n_default = n_default
+		if n_default != null then n_default.parent = self
+	end
+
+	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
+	do
+		if _n_expr == old_child then
+			n_expr = new_child.as(AExpr)
+			return
+		end
+		if n_cases.replace_child(old_child, new_child) then return
+		if _n_default == old_child then
+			n_default = new_child.as(nullable ASwitchDefault)
+			return
+		end
+	end
+
+	redef fun n_expr=(node)
+	do
+		_n_expr = node
+		node.parent = self
+	end
+	redef fun n_default=(node)
+	do
+		_n_default = node
+		if node != null then node.parent = self
+	end
+
+
+	redef fun visit_all(v: Visitor)
+	do
+		v.enter_visit(_n_expr)
+		n_cases.visit_all(v)
+		v.enter_visit(_n_default)
+	end
+end
+redef class ASwitchCase
+	init init_aswitchcase (
+		n_constant: nullable TInteger,
+		n_expr: nullable AExpr
+	)
+	do
+		_n_constant = n_constant.as(not null)
+		n_constant.parent = self
+		_n_expr = n_expr.as(not null)
+		n_expr.parent = self
+	end
+
+	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
+	do
+		if _n_constant == old_child then
+			n_constant = new_child.as(TInteger)
+			return
+		end
+		if _n_expr == old_child then
+			n_expr = new_child.as(AExpr)
+			return
+		end
+	end
+
+	redef fun n_constant=(node)
+	do
+		_n_constant = node
+		node.parent = self
+	end
+	redef fun n_expr=(node)
+	do
+		_n_expr = node
+		node.parent = self
+	end
+
+
+	redef fun visit_all(v: Visitor)
+	do
+		v.enter_visit(_n_constant)
+		v.enter_visit(_n_expr)
+	end
+end
+redef class ASwitchDefault
+	init init_aswitchdefault (
+		n_expr: nullable AExpr
+	)
+	do
+		_n_expr = n_expr.as(not null)
+		n_expr.parent = self
+	end
+
+	redef fun replace_child(old_child: ANode, new_child: nullable ANode)
+	do
+		if _n_expr == old_child then
+			n_expr = new_child.as(AExpr)
+			return
+		end
+	end
+
+	redef fun n_expr=(node)
+	do
+		_n_expr = node
+		node.parent = self
+	end
+
+
+	redef fun visit_all(v: Visitor)
+	do
+		v.enter_visit(_n_expr)
 	end
 end
 redef class AListExprs

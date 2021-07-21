@@ -94,16 +94,6 @@ redef class ModelBuilder
 			nvisibility = null
 			mvisibility = public_visibility
 			mclass = try_get_mclass_by_name(nclassdef, mmodule, name)
-		else if nclassdef isa AEnumClassdef then
-			var qid = nclassdef.n_name
-			assert qid != null
-			name = qid.n_id.text
-			nkind = null
-			mkind = universal_kind
-			nvisibility = null
-			mvisibility = public_visibility
-			arity = 0
- 			mclass = try_get_mclass_by_qid(qid, mmodule)
 		else
 			name = "Sys"
 			nkind = null
@@ -127,20 +117,20 @@ redef class ModelBuilder
 				end
 			end
 
-			if nclassdef isa AEnumClassdef then
-				var constants = new Array[String]
-				for n_constant in nclassdef.n_constants do
-					for constant in constants do
-						if constant == n_constant.text then
-							error(nclassdef, "Error: An enumeration cannot have two constants sharing the same name.")
-							return
-						end
-					end
+			# if nclassdef isa AEnumClassdef then
+			#	var constants = new Array[String]
+			#	for n_constant in nclassdef.n_constants do
+			#		for constant in constants do
+			#			if constant == n_constant.text then
+			#				error(nclassdef, "Error: An enumeration cannot have two constants sharing the same name.")
+			#				return
+			#			end
+			#		end
 
-					constants.add(n_constant.text)
-				end
-
-				mclass = new MEnum(mmodule, name, nclassdef.location, names, mkind, mvisibility, constants)
+			#		constants.add(n_constant.text)
+			#	end
+			if nkind isa AEnumClasskind then
+				mclass = new MEnum(mmodule, name, nclassdef.location, names, mkind, mvisibility, new Array[String])
 			else
 				mclass = new MClass(mmodule, name, nclassdef.location, names, mkind, mvisibility)
 			end
@@ -561,6 +551,10 @@ redef class AInterfaceClasskind
 end
 redef class AUniversalClasskind
 	redef fun mkind do return universal_kind
+end
+# ENUMWORK
+redef class AEnumClasskind
+	redef fun mkind do return enum_kind
 end
 redef class AExternClasskind
 	redef fun mkind do return extern_kind

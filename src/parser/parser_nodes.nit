@@ -539,7 +539,8 @@ class TKwuniversal
 	super TokenKeyword
 end
 
-# The keywords `enum`
+# ENUMWORK
+# The keyword `enum`
 class TKwenum
 	super TokenKeyword
 end
@@ -671,6 +672,21 @@ end
 
 # The keyword `not`
 class TKwnot
+	super TokenKeyword
+end
+
+# ENUMWORK
+class TKwswitch
+	super TokenKeyword
+end
+
+# ENUMWORK
+class TKwcase
+	super TokenKeyword
+end
+
+# ENUMWORK
+class TKwdefault
 	super TokenKeyword
 end
 
@@ -1292,16 +1308,6 @@ class AMainClassdef
 	super AClassdef
 end
 
-class AEnumClassdef
-	super AClassdef
-
-	# The name of the enum
-	var n_name: nullable AQclassid = null is writable
-
-	# The constants of the enum
-	var n_constants = new ANodes[TClassid](self)
-end
-
 # The modifier for the kind of class (abstract, interface, etc.)
 abstract class AClasskind
 	super Prod
@@ -1334,12 +1340,21 @@ class AInterfaceClasskind
 	var n_kwinterface: TKwinterface is writable, noinit
 end
 
-# An enum/universal class modifier (`enum class`)
+# An universal class modifier
 class AUniversalClasskind
 	super AClasskind
 
 	# The `universal` keyword.
 	var n_kwuniversal: TKwuniversal is writable, noinit
+end
+
+# ENUMWORK
+# An enum class modifier
+class AEnumClasskind
+	super AClasskind
+
+	# The `enum` keyword.
+	var n_kwenum: TKwenum is writable, noinit
 end
 
 # An extern class modifier (`extern class`)
@@ -1488,6 +1503,13 @@ class ASuperPropdef
 	var n_type: AType is writable, noinit
 end
 
+# ENUMWORK
+class AConstantPropdef
+	super APropdef
+
+	# Name of the constant
+	var n_name: TClassid is writable, noinit
+end
 
 # Declaration of callbacks for extern methods
 class AExternCalls
@@ -2831,6 +2853,7 @@ class AManyExpr
 	var n_exprs = new ANodes[AExpr](self)
 end
 
+# ENUMWORK
 class AConstantExpr
 	super AExpr
 
@@ -2868,6 +2891,33 @@ end
 # The encapsulated annotations are in `n_annotations`
 class AAtExpr
 	super AExpr
+end
+
+# ENUMWORK
+class ASwitchExpr
+	super AExpr
+
+	var n_expr: AExpr is writable, noinit
+
+	var n_cases = new ANodes[ASwitchCase](self)
+
+	var n_default: nullable ASwitchDefault = null is writable
+end
+
+# ENUMWORK
+class ASwitchCase
+	super Prod
+
+	var n_constant: TInteger is writable, noinit
+
+	var n_expr: AExpr is writable, noinit
+end
+
+# ENUMWORK
+class ASwitchDefault
+	super Prod
+
+	var n_expr: AExpr is writable, noinit
 end
 
 # A special expression to debug types

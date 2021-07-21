@@ -100,6 +100,20 @@ redef class ModelBuilder
 		return res
 	end
 
+	# ENUMWORK
+	# Retrieve all the constants defined in the enumeration
+	private fun collect_constants(mclassdef: MClassDef): Array[String]
+	do
+		var res = new Array[String]
+		var n = mclassdef2nclassdef.get_or_null(mclassdef)
+		for npropdef in n.n_propdefs do
+			if npropdef isa AConstantPropdef then
+				res.add(npropdef.n_name.text)
+			end
+		end
+		return res
+	end
+
 	# Build the properties of `nclassdef`.
 	private fun build_properties(nclassdef: AClassdef)
 	do
@@ -146,6 +160,13 @@ redef class ModelBuilder
 			for npropdef in nclassdef2.n_propdefs do
 				if npropdef isa ATypePropdef then continue
 				npropdef.check_signature(self)
+			end
+
+			# ENUMWORK
+			if nclassdef isa AStdClassdef then
+				if nclassdef.n_classkind isa AEnumClasskind then
+					nclassdef.mclassdef.mclass.as(MEnum).constants = self.collect_constants(nclassdef.mclassdef.as(not null))
+				end
 			end
 		end
 		process_default_constructors(nclassdef)

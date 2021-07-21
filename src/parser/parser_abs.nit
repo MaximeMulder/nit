@@ -106,6 +106,15 @@ end
 class TKwnot
 	super Token
 end
+class TKwswitch
+	super Token
+end
+class TKwcase
+	super Token
+end
+class TKwdefault
+	super Token
+end
 class TKwimplies
 	super Token
 end
@@ -381,6 +390,8 @@ class AParam super Prod end
 class AType super Prod end
 class ALabel super Prod end
 class AExpr super Prod end
+class ASwitchCase super Prod end
+class ASwitchDefault super Prod end
 class AExprs super Prod end
 class AAssignOp super Prod end
 class AForGroup super Prod end
@@ -462,11 +473,6 @@ class AMainClassdef
 	super AClassdef
 	var n_propdefs: List[APropdef] = new List[APropdef]
 end
-class AEnumClassdef
-	super AClassdef
-	var n_name: AQclassid is writable, noinit
-	var n_constants: List[TClassid] = new List[TClassid]
-end
 class AConcreteClasskind
 	super AClasskind
 	var n_kwclass: TKwclass is writable, noinit
@@ -483,6 +489,10 @@ end
 class AUniversalClasskind
 	super AClasskind
 	var n_kwuniversal: TKwuniversal is writable, noinit
+end
+class AEnumClasskind
+	super AClasskind
+	var n_kwenum: TKwenum is writable, noinit
 end
 class AExternClasskind
 	super AClasskind
@@ -566,6 +576,10 @@ class AAnnotPropdef
 	var n_args: List[AExpr] = new List[AExpr]
 	var n_cpar: nullable TCpar = null is writable
 	var n_annotations: nullable AAnnotations = null is writable
+end
+class AConstantPropdef
+	super APropdef
+	var n_name: TClassid is writable, noinit
 end
 class AIdMethid
 	super AMethid
@@ -1251,6 +1265,21 @@ class AConstantExpr
 	super AExpr
 	var n_enum: TClassid is writable, noinit
 	var n_constant: TClassid is writable, noinit
+end
+class ASwitchExpr
+	super AExpr
+	var n_expr: AExpr is writable, noinit
+	var n_cases: List[ASwitchCase] = new List[ASwitchCase]
+	var n_default: nullable ASwitchDefault = null is writable
+end
+class ASwitchCase
+	super ASwitchCase
+	var n_constant: TInteger is writable, noinit
+	var n_expr: AExpr is writable, noinit
+end
+class ASwitchDefault
+	super ASwitchDefault
+	var n_expr: AExpr is writable, noinit
 end
 class AListExprs
 	super AExprs

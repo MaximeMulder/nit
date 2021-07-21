@@ -627,10 +627,11 @@ class MClass
 	end
 end
 
+# ENUMWORK
 class MEnum
 	super MClass
 
-	var constants: Array[String]
+	var constants: Array[String] is writable
 end
 
 # A definition (an introduction or a refinement) of a class in a module
@@ -2496,6 +2497,16 @@ class MAttribute
 	var setter: nullable MProperty = null is writable
 end
 
+# ENUMWORK
+# Constant of a listed enum
+# Example:
+# enum Color
+#     case Red # <--- Here.
+# end
+class MConstant
+	super MProperty
+end
+
 # A global virtual type
 class MVirtualTypeProp
 	super MProperty
@@ -2778,8 +2789,10 @@ fun abstract_kind: MClassKind do return once new MClassKind("abstract class", fa
 fun concrete_kind: MClassKind do return once new MClassKind("class", false, true, true)
 # The class kind `interface`
 fun interface_kind: MClassKind do return once new MClassKind("interface", false, true, false)
-# The class kind `enum`
+# The class kind `universal`
 fun universal_kind: MClassKind do return once new MClassKind("universal", false, true, false)
+# The class kind `enum`
+fun enum_kind: MClassKind do return once new MClassKind("enum", false, false, false)
 # The class kind `extern`
 fun extern_kind: MClassKind do return once new MClassKind("extern class", false, true, false)
 # The class kind `subset`

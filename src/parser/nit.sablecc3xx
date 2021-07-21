@@ -142,6 +142,9 @@ kwin = 'in';
 kwand = 'and';
 kwor = 'or';
 kwnot = 'not';
+kwswitch = 'kwswitch'; // ENUMWORK
+kwcase = 'kwcase'; // ENUMWORK
+kwdefault = 'kwdefault'; // ENUMWORK
 kwimplies = 'implies';
 kwreturn = 'return';
 kwcontinue = 'continue';
@@ -255,15 +258,7 @@ import
 topdef {-> classdef}
 	= {classdef} classdef {-> classdef}
 	| propdef_toplevel n1 {-> New classdef.top([propdef_toplevel.propdef])}
-	| {enum} kwenum [name]:qclassid [constants]:constants kwend {-> New classdef.enum(name, [constants.classid])}
 	;
-
-constants {-> classid*}
-	= classid constants_tail* no {-> [classid, constants_tail.classid] }
-	| {null} {-> []}
-	;
-
-constants_tail {-> classid} = pipe no classid {-> classid};
 
 implicit_main_class {-> classdef?}
 	= implicit_main_meth {-> New classdef.main([implicit_main_meth.propdef])}
@@ -289,6 +284,7 @@ classkind
 	| {abstract} kwabstract kwclass
 	| {interface} kwinterface
 	| {universal} kwuniversal
+	| {enum} kwenum // ENUMWORK
 	| {extern} kwextern kwclass
 	| {subset} kwsubset
 	;
@@ -329,6 +325,7 @@ propdef~toplevel {-> propdef}
 !toplevel| {extern_init_implicit} [doc]:nd redef visibility kwnew qmethid? signature annotation_noend? extern_calls extern_code_block {-> New propdef.meth(doc.doc, redef.kwredef, visibility, Null, Null, Null, kwnew, qmethid.methid, signature, annotation_noend.annotations, extern_calls, extern_code_block, Null, Null, Null)}
 !toplevel| {annot} line_annotation_forclass {-> line_annotation_forclass.propdef}
 !toplevel| {super} superclass {-> superclass.propdef}
+!toplevel| {constant} [doc]:nd kwcase classid {-> New propdef.constant(classid)} // ENUMWORK
 	;
 
 annotation_withend~nonull {-> annotations?}
@@ -445,10 +442,12 @@ type~nobra~nopar {-> type}
 	| {inter} [t1]:type_atom~nobra~nopar kwand [t2]:type_atom~nobra~nopar {-> t1.type } /* TODO create real nodes */
 	| {union} [t1]:type_atom~nobra~nopar kwor [t2]:type_atom~nobra~nopar {-> t1.type }
 	;
+
 type_atom~nobra~nopar {-> type}
 	= {simple} kwnullable? qclassid annotations_o~nopar {-> New type(kwnullable, qclassid, Null, [], Null, annotations_o~nopar.annotations)}
 !nobra	| {generic} kwnullable? qclassid obra no types [n2]:no cbra annotations_o~nopar {-> New type(kwnullable, qclassid, obra, [types.type], cbra, annotations_o~nopar.annotations)}
 	;
+
 types {-> type*} = type types_tail* {-> [type, types_tail.type]};
 
 types_tail {-> type} = comma no type {-> type};
@@ -707,8 +706,15 @@ expr_single~nopar~nobra {-> expr}
 !nobra!nopar	| {range} obra no expr [n2]:no dotdot [n3]:no [expr2]:expr_nobra [n4]:no cbra annotations_o {-> New expr.crange(obra, expr, dotdot, expr2.expr, cbra, annotations_o.annotations)}
 !nobra!nopar	| {orange} obra no expr [n2]:no dotdot [n3]:no [expr2]:expr_nobra [n4]:no [cbra]:obra annotations_o {-> New expr.orange(obra, expr, dotdot, expr2.expr, cbra, annotations_o.annotations)}
 !nobra!nopar	| {array} obra no array_items typing_o cbra annotations_o {-> New expr.array(obra, [array_items.expr], typing_o.type, cbra, annotations_o.annotations)}
-	| {constant} [enum]:classid [q1]:quad [q2]:quad [constant]:classid {-> New expr.constant(enum, constant)}
+	| {constant} [enum]:classid [q1]:quad [q2]:quad [constant]:classid {-> New expr.constant(enum, constant)} // ENUMWORK
+	| {switch} kwswitch [n1]:no expr [n2]:no switch_case* switch_default? kwend [n3]:n1 {-> New expr.switch(expr, [switch_case], switch_default)} // ENUMWORK
 	;
+
+// ENUMWORK
+switch_case {-> switch_case} = kwcase [n1]:no integer [n2]:no kwdo [n3]:no expr [n4]:no {-> New switch_case(integer, expr)};
+
+// ENUMWORK
+switch_default {-> switch_default} = kwdefault [n1]:no expr [n2]:no {-> New switch_default(expr)};
 
 expr_par {-> expr}
 	= {par} opar no any_expr [n2]:no cpar annotations_o {-> New expr.par(opar, any_expr.expr, cpar, annotations_o.annotations)}
@@ -884,7 +890,7 @@ classquad {-> classid} = classid quad no {-> classid};
 kwend_o {-> kwend?} = kwend? {-> kwend};
 
 /* A single hard break */
-n1	= {a} comment | {b} eol | {c} semi;
+n1 = {a} comment | {b} eol | {c} semi;
 
 /* A mandatory hard break, returns the last comment */
 n~nosemi {-> doc?}
@@ -933,7 +939,6 @@ classdef
 	= {std} doc? kwredef? visibility classkind [qid]:qclassid? obra? [formaldefs]:formaldef* cbra? extern_code_block? [propdefs]:propdef* kwend
 	| {top} [propdefs]:propdef*
 	| {main} [propdefs]:propdef*
-	| {enum} [name]:qclassid [constants]:classid*
 	;
 
 classkind
@@ -941,6 +946,7 @@ classkind
 	| {abstract} kwabstract kwclass
 	| {interface} kwinterface
 	| {universal} kwuniversal
+	| {enum} kwenum // ENUMWORK
 	| {extern} kwextern kwclass?
 	| {subset} kwsubset
 	;
@@ -954,6 +960,7 @@ propdef
 	| {meth} doc? kwredef? visibility kwmeth? kwinit? kwisa? kwnew? methid? signature annotations? extern_calls? extern_code_block? kwdo? [block]:expr? kwend?
 	| {super} doc? kwredef? visibility kwsuper type annotations?
 	| {annot} doc? kwredef? visibility? atid opar? [args]:expr* cpar? annotations?
+	| {constant} [name]:classid // ENUMWORK
 	;
 
 methid
@@ -1086,8 +1093,15 @@ expr
 	| {methid} expr [id]:methid
 	| {at} annotations
 	| {many} [exprs]:expr*
-	| {constant} [enum]:classid [constant]:classid
+	| {constant} [enum]:classid [constant]:classid // ENUMWORK
+	| {switch} expr [cases]:switch_case* [default]:switch_default? // ENUMWORK
 	;
+
+// ENUMWORK
+switch_case = [constant]:integer expr;
+
+// ENUMWORK
+switch_default = expr;
 
 exprs
 	= {list} [exprs]:expr*

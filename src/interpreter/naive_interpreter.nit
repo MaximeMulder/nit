@@ -850,16 +850,15 @@ class ConstantInstance
 
 	redef fun ==(o)
 	do
-		if not o isa ConstantInstance then return false
-		return self.mtype == o.mtype and self.index == o.index
+		return false
+		# if not o isa ConstantInstance then return false
+		# return self.mtype == o.mtype and self.index == o.index
 	end
 
 	redef fun eq_is(o)
 	do
 		return self == o
 	end
-
-	redef fun to_s do return "TODO to_s"
 end
 
 # Information about local variables in a running method
