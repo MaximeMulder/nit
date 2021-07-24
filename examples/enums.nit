@@ -21,3 +21,10 @@ print Color::::Red
 var blue = Color::::Blue
 
 print_color(Color::::Green)
+
+kwswitch a
+    kwcase 0 do
+        a()
+    kwcase 1 do
+        b()
+end

@@ -486,6 +486,7 @@ stmt~withelse~noexpr~nopar {-> expr}
 	| {continue} kwcontinue label? {-> New expr.continue(kwcontinue, label)}
 	| {do} do~withelse {-> do~withelse.expr}
 !noexpr	| {if} if~withelse {-> if~withelse.expr}
+!noexpr | {switch} kwswitch [n1]:no expr switch_case* switch_default? [n3]:n kwend {-> New expr.switch(expr, [switch_case], switch_default)} // ENUMWORK
 	| {while} while~withelse {-> while~withelse.expr}
 	| {loop} loop~withelse {-> loop~withelse.expr}
 	| {for} for~withelse {-> for~withelse.expr}
@@ -707,14 +708,13 @@ expr_single~nopar~nobra {-> expr}
 !nobra!nopar	| {orange} obra no expr [n2]:no dotdot [n3]:no [expr2]:expr_nobra [n4]:no [cbra]:obra annotations_o {-> New expr.orange(obra, expr, dotdot, expr2.expr, cbra, annotations_o.annotations)}
 !nobra!nopar	| {array} obra no array_items typing_o cbra annotations_o {-> New expr.array(obra, [array_items.expr], typing_o.type, cbra, annotations_o.annotations)}
 	| {constant} [enum]:classid [q1]:quad [q2]:quad [constant]:classid {-> New expr.constant(enum, constant)} // ENUMWORK
-	| {switch} kwswitch [n1]:no expr [n2]:no switch_case* switch_default? kwend [n3]:n1 {-> New expr.switch(expr, [switch_case], switch_default)} // ENUMWORK
 	;
 
 // ENUMWORK
-switch_case {-> switch_case} = kwcase [n1]:no integer [n2]:no kwdo [n3]:no expr [n4]:no {-> New switch_case(integer, expr)};
+switch_case {-> switch_case} = [n1]:n kwcase [n2]:no integer [n3]:no kwdo [n4]:no expr {-> New switch_case(integer, expr)};
 
 // ENUMWORK
-switch_default {-> switch_default} = kwdefault [n1]:no expr [n2]:no {-> New switch_default(expr)};
+switch_default {-> switch_default} = [n1]:n kwdefault [n2]:no expr {-> New switch_default(expr)};
 
 expr_par {-> expr}
 	= {par} opar no any_expr [n2]:no cpar annotations_o {-> New expr.par(opar, any_expr.expr, cpar, annotations_o.annotations)}
