@@ -2633,6 +2633,17 @@ redef class ADebugTypeExpr
 	end
 end
 
+# ENUMWORK
+redef class ASwitchExpr
+	redef fun accept_typing(v)
+	do
+		v.visit_expr(n_expr)
+
+		self.is_typed = true
+	end
+end
+
+# ENUMWORK
 redef class AConstantExpr
 	# Index of the constant in the enumeration, used instead of the constant name as an optimization.
 	var constant_index: nullable Int
