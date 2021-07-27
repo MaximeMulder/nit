@@ -101,14 +101,14 @@ redef class ModelBuilder
 	end
 
 	# ENUMWORK
-	# Retrieve all the constants defined in the enumeration
-	private fun collect_constants(mclassdef: MClassDef): Array[String]
+	# Retrieve all the constants definitions in a class definition
+	private fun collect_constants(mclassdef: MClassDef): Array[AConstantPropdef]
 	do
-		var res = new Array[String]
+		var res = new Array[AConstantPropdef]
 		var n = mclassdef2nclassdef.get_or_null(mclassdef)
 		for npropdef in n.n_propdefs do
 			if npropdef isa AConstantPropdef then
-				res.add(npropdef.n_name.text)
+				res.add(npropdef)
 			end
 		end
 		return res
@@ -164,8 +164,24 @@ redef class ModelBuilder
 
 			# ENUMWORK
 			if nclassdef isa AStdClassdef then
+				var mclass = nclassdef.mclassdef.as(not null)
+				var constants = self.collect_constants(mclass)
+				var attributes = collect_attr_propdef(mclass)
 				if nclassdef.n_classkind isa AEnumClasskind then
-					nclassdef.mclassdef.mclass.as(MEnum).constants = self.collect_constants(nclassdef.mclassdef.as(not null))
+					if constants.length > 0 and attributes.length > 0 then
+						error(attributes[0], "Error: Cannot define both constants and attributes in an enumeration.")
+						return
+					end
+
+					if constants.length == 0 and attributes.length == 0 then
+						error(nclassdef, "Error: No constants or attributes or attribute defined in the enumeration.")
+						return
+					end
+				else
+					if constants.length > 0 then
+						error(constants[0], "Error: An enumeration cannot have neither constants nor attributes.")
+						return
+					end
 				end
 			end
 		end

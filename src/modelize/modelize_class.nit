@@ -117,20 +117,24 @@ redef class ModelBuilder
 				end
 			end
 
-			# if nclassdef isa AEnumClassdef then
-			#	var constants = new Array[String]
-			#	for n_constant in nclassdef.n_constants do
-			#		for constant in constants do
-			#			if constant == n_constant.text then
-			#				error(nclassdef, "Error: An enumeration cannot have two constants sharing the same name.")
-			#				return
-			#			end
-			#		end
+			if nclassdef isa AStdClassdef and nclassdef.n_classkind isa AEnumClasskind then
+				var constants = new Array[String]
+				for n_propdef in nclassdef.n_propdefs do
+					if not n_propdef isa AConstantPropdef then
+						continue
+					end
 
-			#		constants.add(n_constant.text)
-			#	end
-			if nkind isa AEnumClasskind then
-				mclass = new MEnum(mmodule, name, nclassdef.location, names, mkind, mvisibility, new Array[String])
+					var text = n_propdef.n_name.text
+					for constant in constants do
+						if constant == text then
+							error(nclassdef, "Error: An enumeration cannot have two constants that share the same name.")
+							return
+						end
+					end
+
+					constants.add(text)
+				end
+				mclass = new MEnum(mmodule, name, nclassdef.location, names, mkind, mvisibility, constants)
 			else
 				mclass = new MClass(mmodule, name, nclassdef.location, names, mkind, mvisibility)
 			end

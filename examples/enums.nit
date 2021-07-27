@@ -1,16 +1,17 @@
 enum Color
     kwcase Red
+    kwcase Blue
+    kwcase Green
 
-    fun test do end
-end
-
-fun print_color(color: Color) do
-    if color.is_same_instance(Color::::Red) then
-        print "Red"
-    else if color.is_same_instance(Color::::Green) then
-        print "Green"
-    else
-        print "Blue"
+    redef fun to_s
+    do
+        if self == Color::::Red then
+            return "Red"
+        else if self == Color::::Green then
+            return "Green"
+        else
+            return "Blue"
+        end
     end
 end
 
@@ -20,11 +21,4 @@ print Color::::Red
 
 var blue = Color::::Blue
 
-print_color(Color::::Green)
-
-kwswitch a
-    kwcase 0 do
-        a()
-    kwcase 1 do
-        b()
-end
+print Color::::Green
